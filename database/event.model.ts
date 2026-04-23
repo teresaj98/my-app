@@ -36,9 +36,44 @@ function slugifyTitle(title: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-/** Parse any reasonable date string and store as `YYYY-MM-DD` (ISO 8601 calendar date). */
+const ISO_DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+/** True when y-m-d is a real calendar day (local date parts, no UTC shift). */
+function isValidYmdParts(y: number, m: number, d: number): boolean {
+  if (!Number.isInteger(y) || y < 1) return false;
+  if (!Number.isInteger(m) || m < 1 || m > 12) return false;
+  if (!Number.isInteger(d) || d < 1 || d > 31) return false;
+  const constructed = new Date(y, m - 1, d);
+  return (
+    constructed.getFullYear() === y &&
+    constructed.getMonth() === m - 1 &&
+    constructed.getDate() === d
+  );
+}
+
+/**
+ * Store as `YYYY-MM-DD`. Date-only strings stay literal (no UTC reinterpretation);
+ * other inputs use local calendar fields from `Date`, not `toISOString()`.
+ */
 function normalizeDateToIso(value: string): string {
   const trimmed = value.trim();
+
+  if (ISO_DATE_ONLY.test(trimmed)) {
+    const parts = trimmed.split("-");
+    const y = Number(parts[0]);
+    const m = Number(parts[1]);
+    const d = Number(parts[2]);
+    if (!isValidYmdParts(y, m, d)) {
+      throw new mongoose.Error.ValidatorError({
+        path: "date",
+        message: "Invalid date; use a recognizable date string or ISO-8601 format.",
+        type: "invalid",
+        value: trimmed,
+      });
+    }
+    return trimmed;
+  }
+
   const parsed = new Date(trimmed);
   if (Number.isNaN(parsed.getTime())) {
     throw new mongoose.Error.ValidatorError({
@@ -48,7 +83,11 @@ function normalizeDateToIso(value: string): string {
       value: trimmed,
     });
   }
-  return parsed.toISOString().slice(0, 10);
+
+  const y = parsed.getFullYear();
+  const mo = parsed.getMonth() + 1;
+  const day = parsed.getDate();
+  return `${y}-${String(mo).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 /**

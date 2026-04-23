@@ -53,7 +53,14 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
   }
 
   if (!cache.promise) {
-    cache.promise = mongoose.connect(uri, defaultConnectOptions);
+    cache.promise = mongoose
+      .connect(uri, defaultConnectOptions)
+      .catch((err: unknown) => {
+        // Allow a later `connectToDatabase()` to call `mongoose.connect` again.
+        cache.promise = null;
+        cache.conn = null;
+        throw err;
+      });
   }
 
   cache.conn = await cache.promise;
