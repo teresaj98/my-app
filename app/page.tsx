@@ -1,8 +1,14 @@
 import EventCard from "@/components/EventCard";
 import { ExploreBtn } from "@/components/ExploreBtn";
-import { events } from "@/lib/constants";
+import { EventSchemaFields } from "@/database/event.model";
 
-const Home = () => {
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+const Home = async () => {
+
+  const response = await fetch(`${BASE_URL}/api/events`);
+  const {events} = await response.json();
+
   return (
     <section>
       <h1 className="text-center">The Hub for Every Dev <br /> Event You Cannot Miss</h1>
@@ -14,9 +20,9 @@ const Home = () => {
         <h3>Featured Events</h3>
 
         <ul className="events">
-          {events.map((event) => (
+          { events && events.length > 0 && events.map((event: EventSchemaFields) => (
             <li className="list-none" key={event.slug}>
-              <EventCard title={event.title} image={event.image} slug={event.slug} location={event.location} date={event.date} time={event.time} description={event.description} />
+              <EventCard title={event.title} image={event.image} slug={event.slug} location={event.location} date={event.date} time={event.time} />
             </li>
           ))}
         </ul>
