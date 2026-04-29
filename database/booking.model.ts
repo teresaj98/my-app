@@ -10,6 +10,7 @@ import { Event } from "./event.model";
 export interface BookingSchemaFields {
   eventId: mongoose.Types.ObjectId;
   email: string;
+  slug: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -31,6 +32,11 @@ const bookingSchema = new Schema<BookingSchemaFields>(
       trim: true,
       lowercase: true,
       match: [EMAIL_PATTERN, "Invalid email format"],
+    },
+    slug: {
+      type: String,
+      required: true,
+      trim: true,
     },
   },
   {
@@ -67,6 +73,15 @@ bookingSchema.pre(
       });
     }
 
+    const slug = this.get("slug") as string | undefined;
+    if (!slug) {
+      throw new mongoose.Error.ValidatorError({
+        path: "slug",
+        message: "slug is required.",
+        type: "required",
+        value: slug,
+      });
+    }
     const exists = await Event.exists({ _id: eventId });
     if (!exists) {
       throw new Error(`No Event found for eventId=${eventId.toString()}`);
