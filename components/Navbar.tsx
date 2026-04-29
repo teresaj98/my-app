@@ -13,9 +13,15 @@ const Navbar = () => {
                     <p>DevEvent</p>
                 </Link>
                 <ul>
-                    <Link href="/">Home</Link>
-                    <Link href="/events" onClick={() => posthog.capture("events_nav_clicked")}>Events</Link>
-                    <Link href="/about" onClick={() => posthog.capture("create_event_clicked")}>Create Event</Link>
+                    <li>
+                        <Link href="/">Home</Link>
+                    </li>
+                    <li>
+                        <Link href="/events" onClick={() => posthog.capture("events_nav_clicked")}>Events</Link>
+                    </li>
+                    <li>
+                        <Link href="/about" onClick={() => posthog.capture("create_event_clicked")}>Create Event</Link>
+                    </li>
                 </ul>
             </nav>
         </header>
