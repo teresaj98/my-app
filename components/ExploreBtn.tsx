@@ -6,7 +6,6 @@ import posthog from "posthog-js";
 export const ExploreBtn = () => {
   return (
     <button type="button" id="explore-btn" className="mt-7 mx-auto" onClick={() => {
-      console.log("Explore");
       posthog.capture("explore_events_clicked");
     }}>
       <a href="#events">
