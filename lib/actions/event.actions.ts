@@ -1,18 +1,19 @@
 'use server';
 
 import { connectToDatabase } from "../mongodb";
-import { Event } from "@/database/event.model";
+import { Event as EventModel } from "@/database/event.model";
+import type { Event } from "@/lib/constants";
 
-export const getSimilarEventsBySlug = async (slug: string): Promise<EventCardData[]> => {
+export const getSimilarEventsBySlug = async (slug: string): Promise<Event[]> => {
     try {
         await connectToDatabase();
 
-        const event = await Event.findOne({ slug }).select("tags").lean<{ tags: string[] } | null>();
+        const event = await EventModel.findOne({ slug }).select("tags").lean<{ tags: string[] } | null>();
         if (!event?.tags?.length) {
             return [];
         }
 
-        const similarEvents = await Event.find({
+        const similarEvents = await EventModel.find({
             slug: { $ne: slug },
             tags: { $in: event.tags },
         })
